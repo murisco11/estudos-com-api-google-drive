@@ -119,6 +119,27 @@ async function update_file (fileId) { // Function para atualizar arquivo
   } 
 }
 
+async function download_file(fileId, destination) { // Function para baixar um arquivo
+  try {
+    const dest = fs.createWriteStream(destination) // Pegar o destino
+    const response = await drive.files.get( // Const para pegar o arquivo que quer
+      { fileId: fileId, alt: 'media' }, // O parâmetro 'alt' especifica que o conteúdo do arquivo será retornado diretamente; e o fileId é o ID do arquivo que quer copiar
+      { responseType: 'stream' } // A resposta será os dados do arquivo
+    )
+
+    response.data
+      .on('end', () => { // Evento de quando o download for concluído
+        console.log('Download concluído.') // Download concluído
+      })
+      .on('error', err => { // Evento de quando o download não é efetuado com sucesso
+        console.error('Erro durante o download: ', err) // Erro no download
+      })
+      .pipe(dest) // Canaliza os dados do stream de resposta para o stream de escrita do arquivo de destino
+  } catch (error) { // Caso der algum erro...
+    console.error('Erro ao baixar arquivo', error)
+  }
+}
+
 upload_file().then(data => {
   console.log(data)
   list_files()
